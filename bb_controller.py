@@ -46,7 +46,6 @@ class Controller:
             self.light_sensors[i].enable(self.time_step)
         # taken from e-puck_light_lab2.py -------------------------------------------------------
 
-    
     def read_light_sensors(self):
         for i in range(8):
             print("ls" + str(i) + ": " , self.light_sensors[i].getValue())
@@ -56,8 +55,12 @@ class Controller:
             print("ps" + str(i) + ": " , self.proximity_sensors[i].getValue())
 
     def read_ground_sensors(self):
-        for i in range(3):
-            print("gs" + str(i) + ": " , self.ground_sensors[i].getValue())
+        # for i in range(3):
+        #     print("gs" + str(i) + ": " , self.ground_sensors[i].getValue())
+        self.ground_values = []
+        for i in range(len(self.ground_sensors)):
+            self.ground_values.append(self.ground_sensors[i].getValue())
+        print(self.ground_values)
 
     def read_all_sensors(self):
         while self.robot.step(self.time_step) != -1:
@@ -67,8 +70,28 @@ class Controller:
             print(" ")
             self.read_light_sensors()
 
+    def follow_line(self):
+        while self.robot.step(self.time_step) != -1:
+            self.read_ground_sensors()
+
+            if (self.ground_values[0] > 500):
+                self.velocity_left = 1
+                self.velocity_right = 0.5
+
+            elif (self.ground_values[2] > 500):
+                self.velocity_left = 0.5
+                self.velocity_right = 1
+
+            elif (self.ground_values[1] < 500):
+                self.velocity_left = 1
+                self.velocity_right = 1
+
+            self.left_motor.setVelocity(self.velocity_left)
+            self.right_motor.setVelocity(self.velocity_right)
+
 if __name__ == "__main__":
     my_robot = Robot()
     controller = Controller(my_robot)
-    controller.read_all_sensors()
+    controller.follow_line()
+    # controller.read_ground_sensors()
     
